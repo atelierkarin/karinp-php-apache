@@ -1,16 +1,15 @@
 FROM php:7-apache
 MAINTAINER KarinP <atelierkarin@gmail.com>
 
-# Basic
+# 基本
 WORKDIR /var/www/html
-RUN cp -f /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime
 
-# Enable Apache Rewrite
+# Rewrite機能をオン
 RUN a2enmod rewrite
 RUN a2enmod headers
 RUN a2dismod -f autoindex
 
-# Install Extensions
+# 必要なライブラリをインストール
 RUN apt-get update
 RUN apt-get -y install \
         g++ \
@@ -29,6 +28,11 @@ RUN apt-get -y install \
         libxml2-dev \
         libsodium-dev \
         libzip-dev
+        
+# Onigurumaをインストール
+RUN apt-get -y install libonig-dev
+
+# PHPの拡張機能をインストール
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
 RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu
 RUN docker-php-ext-install iconv pdo pdo_mysql mbstring soap gd zip ldap bcmath sodium opcache
@@ -45,8 +49,5 @@ RUN apt-get install -y libssl-dev && \
 RUN pecl install --force mcrypt-1.0.1 \
     && docker-php-ext-enable mcrypt
 
-# Copy files and set permissions
+# 設定ファイルをコピー
 COPY php.ini /usr/local/etc/php/php.ini
-
-# install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --filename=composer --install-dir=/usr/local/bin
